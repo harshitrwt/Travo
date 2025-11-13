@@ -1,0 +1,42 @@
+{
+    "manifest_version": 3,
+    "name": "Travo - Translate on the GO",
+    "description": "Instantly translate any webpage into your preferred language using AI",
+    "version": "1.0.0",
+    "icons": {
+        "1": "icon1.png",
+        "2": "icon2.png",
+        "3": "icon3.png"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "contextMenus"
+    ],
+    "background": {
+        "service_worker": "background/background.js"
+    },
+    "action": {
+        "default_popup": "popup/index.html",
+        "default_icon": {
+            "1": "icon1.png",
+            "2": "icon2.png",
+            "3": "icon3.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content/contentScript.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ]
+}
