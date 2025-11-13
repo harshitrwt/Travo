@@ -1,5 +1,5 @@
-import { sendToBackend } from "../content/api";
-import { replaceTextNodes } from "../content/domUtils";
+import { sendToBackend } from "./api";
+import { replaceTextNodes } from "./domUtils";
 import { getLanguage } from "../utils/storage";
 
 // Listen for context menu or popup trigger

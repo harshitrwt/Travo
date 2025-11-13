@@ -22,17 +22,17 @@ const Popup = () => {
 
   const handleTranslate = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id!, { action: "translatePage" });
+      chrome.tabs.sendMessage(tabs[0].id, { action: "translatePage" });
     });
   };
 
   const handleReset = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id!, { action: "resetTranslation" });
+      chrome.tabs.sendMessage(tabs[0].id, { action: "resetTranslation" });
     });
   };
 
-  const handleLanguageChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLanguageChange = async (e) => {
     const newLang = e.target.value;
     setSelectedLang(newLang);
     await setLanguage(newLang);
@@ -40,7 +40,7 @@ const Popup = () => {
 
   return (
     <div className="popup-container">
-      <h1 className="popup-title">🌊 LingoSurf</h1>
+      <h1 className="popup-title">🌊 Travo </h1>
       <p className="popup-subtitle">Surf any site in your language</p>
 
       <div className="popup-controls">

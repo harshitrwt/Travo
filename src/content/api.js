@@ -1,7 +1,7 @@
 import { BACKEND_URL } from "../utils/config";
 
 // Sends text to backend for translation
-export async function sendToBackend(text: string, targetLang: string) {
+export async function sendToBackend(text, targetLang) {
   try {
     const res = await fetch(`${BACKEND_URL}/translate`, {
       method: "POST",
