@@ -8,7 +8,7 @@ const languages = [
   { code: "fr", name: "French" },
   { code: "jp", name: "Japanese" },
   { code: "ko", name: "Korean" },
-  { code: "ru", name: "Russian" }
+  { code: "ru", name: "Russian" },
 ];
 
 const Popup = () => {
@@ -40,26 +40,40 @@ const Popup = () => {
 
   return (
     <div className="popup-container">
-      <h1 className="popup-title">🌊 Travo </h1>
-      <p className="popup-subtitle">Surf any site in your language</p>
+      <div className="popup-header">
+        <h1 className="popup-title">Travo</h1>
+        <p className="popup-subtitle">Translate the web on the GO!</p>
+      </div>
 
-      <div className="popup-controls">
-        <label>Select Language</label>
-        <select value={selectedLang} onChange={handleLanguageChange}>
-          {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>
-              {lang.name}
-            </option>
-          ))}
-        </select>
+      <div className="popup-content">
+        <label className="popup-label">Select language</label>
+        <div className="select-wrapper">
+          <select
+            value={selectedLang}
+            onChange={handleLanguageChange}
+            className="language-select"
+          >
+            {languages.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="popup-buttons">
-          <button onClick={handleTranslate}>Translate Page</button>
-          <button onClick={handleReset} className="reset-btn">
+          <button onClick={handleTranslate} className="btn translate-btn">
+            Translate
+          </button>
+          <button onClick={handleReset} className="btn reset-btn">
             Reset
           </button>
         </div>
       </div>
+
+      <footer className="popup-footer">
+        <p>✨ Powered by LingoDEV</p>
+      </footer>
     </div>
   );
 };
