@@ -9,7 +9,7 @@ export async function sendToBackend(text, targetLang) {
       body: JSON.stringify({ text, targetLang })
     });
     const data = await res.json();
-    return data.translatedText;
+    return data.translated;
   } catch (err) {
     console.error("Error calling backend:", err);
     return text;

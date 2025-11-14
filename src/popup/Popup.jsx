@@ -40,40 +40,33 @@ const Popup = () => {
 
   return (
     <div className="popup-container">
-      <div className="popup-header">
-        <h1 className="popup-title">Travo</h1>
-        <p className="popup-subtitle">Translate the web on the GO!</p>
+      <div className="logo-circle">
+        {/* Use an SVG/component for real logo; placeholder shape here */}
+        <span role="img" aria-label="Red panda"
+          style={{ fontSize: 54 }}>🦊</span>
       </div>
-
-      <div className="popup-content">
-        <label className="popup-label">Select language</label>
-        <div className="select-wrapper">
-          <select
-            value={selectedLang}
-            onChange={handleLanguageChange}
-            className="language-select"
-          >
-            {languages.map((lang) => (
-              <option key={lang.code} value={lang.code}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="popup-buttons">
-          <button onClick={handleTranslate} className="btn translate-btn">
-            Translate
-          </button>
-          <button onClick={handleReset} className="btn reset-btn">
-            Reset
-          </button>
-        </div>
+      <div className="lingo-title">LINGO</div>
+      <label className="popup-label" htmlFor="language-select">Select language</label>
+      <div className="select-wrapper">
+        <select
+          id="language-select"
+          value={selectedLang}
+          onChange={handleLanguageChange}
+          className="language-select"
+        >
+          {languages.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.name}
+            </option>
+          ))}
+        </select>
       </div>
-
-      <footer className="popup-footer">
-        <p>✨ Powered by LingoDEV</p>
-      </footer>
+      <button onClick={handleTranslate} className="btn translate-btn">
+        Translate
+      </button>
+      <button onClick={handleReset} className="btn clear-btn">
+        Clear translations
+      </button>
     </div>
   );
 };

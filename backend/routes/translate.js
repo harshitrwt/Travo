@@ -6,9 +6,8 @@ const { translateText } = require("../utils/geminiClient");
 
 const router = express.Router();
 
-const LOCALES_DIR = path.join(__dirname, "..", "locales");
+const LOCALES_DIR = path.join(__dirname, "..", "i18n");
 
-/** Ensure locale file exists */
 function ensureLocaleFile(lang) {
   const file = path.join(LOCALES_DIR, `${lang}.json`);
   if (!fs.existsSync(file)) {
@@ -16,6 +15,7 @@ function ensureLocaleFile(lang) {
   }
   return file;
 }
+
 
 /** Save a translation into locales/<lang>.json */
 function saveToLocale(lang, key, value) {
