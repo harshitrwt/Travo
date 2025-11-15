@@ -148,11 +148,10 @@ const Popup = () => {
 
             {statusMessage && (
               <div
-                className={`status-message ${
-                  statusMessage.includes("fail") || statusMessage.includes("Rate") 
-                    ? "error" 
+                className={`status-message ${statusMessage.includes("fail") || statusMessage.includes("Rate")
+                    ? "error"
                     : "success"
-                }`}
+                  }`}
               >
                 {statusMessage}
               </div>
@@ -172,14 +171,22 @@ const Popup = () => {
                 className="btn clear-btn"
                 disabled={isLoading}
               >
-                Clear translations
+                Clear Translations
               </button>
             </div>
           </div>
 
           <div className="footer">
-            <span className="footer-text">Powered by Lingo.Dev</span>
+            <span className="footer-text" style={{ display: 'flex', alignItems: 'center' }}>
+              <img
+                src="/lingo.png"
+                alt="Lingo logo"
+                style={{ height: '1em', marginRight: '0.5em' }}
+              />
+              Powered by Lingo.Dev
+            </span>
           </div>
+
         </>
       )}
     </div>

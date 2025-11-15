@@ -56,6 +56,8 @@ html, body {
 /* Header */
 .logo-circle {
   text-align: center;
+  rotate: -15deg;
+  margin-bottom: 9px;
 }
 
 .lingo-title {
@@ -106,7 +108,7 @@ html, body {
 }
 
 .translate-btn:hover {
-  background: #1a1a1a;
+  background: #ad7117;
 }
 
 .clear-btn {
@@ -117,6 +119,8 @@ html, body {
 .clear-btn:hover {
   background: #e9eaef;
 }
+
+
 
 /* Footer */
 .footer {
@@ -149,5 +153,5 @@ html, body {
 }
 
 .footer-text {
-  margin-top: 4px;
+  margin-top: 7px;
 }
