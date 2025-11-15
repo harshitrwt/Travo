@@ -1,16 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap');
 
 html, body {
-  width: 89vh;
-  height: 50vh;
-  background: transparent;
+  width: 100%;
+  height: 100%;
+  background: #fff;
 }
 
 .popup-container {
   width: 335px;
   background: #fff;
-  border-radius: 27px;
-  box-shadow: 0 6px 24px 0 rgba(30,32,50,0.11), 0 1.5px 4px 0 rgba(30,32,50,0.13);
+  
   padding: 36px 12px 24px 12px;
   display: flex;
   flex-direction: column;

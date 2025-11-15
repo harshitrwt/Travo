@@ -5,71 +5,119 @@ const crypto = require("crypto");
 const { translateText } = require("../utils/geminiClient");
 
 const router = express.Router();
+const I18N_DIR = path.join(__dirname, "..", "i18n");
 
-const LOCALES_DIR = path.join(__dirname, "..", "i18n");
+
+if (!fs.existsSync(I18N_DIR)) fs.mkdirSync(I18N_DIR, { recursive: true });
 
 function ensureLocaleFile(lang) {
-  const file = path.join(LOCALES_DIR, `${lang}.json`);
+  const file = path.join(I18N_DIR, `${lang}.json`);
   if (!fs.existsSync(file)) {
     fs.writeFileSync(file, JSON.stringify({}, null, 2), "utf8");
   }
   return file;
 }
 
-
-/** Save a translation into locales/<lang>.json */
 function saveToLocale(lang, key, value) {
   const file = ensureLocaleFile(lang);
-  const raw = fs.readFileSync(file, "utf8");
+  const raw = fs.readFileSync(file, "utf8") || "{}";
   const json = raw ? JSON.parse(raw) : {};
   json[key] = value;
   fs.writeFileSync(file, JSON.stringify(json, null, 2), "utf8");
 }
 
-/** Generate translation key */
 function generateKeyFromText(text) {
   const h = crypto.createHash("sha256").update(text).digest("hex");
   return `t_${h.slice(0, 10)}`;
 }
 
-/** POST /api/translate */
+
 router.post("/translate", async (req, res) => {
   try {
-    const { text, target, save = true, saveKey } = req.body;
+    const { text, texts, targetLang, save = true } = req.body;
 
-    if (!text || !target) {
-      return res.status(400).json({ error: "text and target required" });
+    // Batch mode (array of texts)
+    if (Array.isArray(texts) && texts.length > 0) {
+      console.log(`Translation batch request: items=${texts.length}, targetLang=${targetLang}`);
+      if (!targetLang) return res.status(400).json({ error: 'targetLang required' });
+
+      const translatedArray = [];
+      for (let i = 0; i < texts.length; i++) {
+        const t = texts[i] || '';
+        try {
+          let translated = await translateText(t, targetLang);
+          if (typeof translated !== 'string') translated = String(translated || '');
+          translated = translated.trim();
+          translatedArray.push(translated);
+
+          if (save) {
+            const key = generateKeyFromText(t);
+            saveToLocale(targetLang, key, translated);
+          }
+        } catch (err) {
+          // If quota/rate limit error, return 429 to client instead of crashing
+          if (err.status === 429 || /rate limit|quota|too many requests/i.test(String(err))) {
+            console.warn('Rate limit detected, signaling to client');
+            return res.status(429).json({ error: 'Rate limit exceeded. Please retry in 1 minute.' });
+          }
+          console.error('Batch item translation failed at index', i, err);
+          translatedArray.push('');
+        }
+      }
+
+      return res.json({ translatedArray });
     }
 
-    // Call Gemini API
-    let translated = await translateText(text, target);
+    // Single text mode
+    const txt = text;
+    console.log(`Translation request: text length=${txt?.length}, targetLang=${targetLang}`);
 
-    // Remove unwanted newline or spaces
-    translated = translated.trim();
+    if (!txt || !targetLang) {
+      return res.status(400).json({ error: "text and targetLang required" });
+    }
+
+    if (txt.length > 1000000) {
+      return res.status(413).json({ error: "Text too large (max 1MB)" });
+    }
+
+    let translated;
+    try {
+      translated = await translateText(txt, targetLang);
+    } catch (err) {
+      // If quota/rate limit error, return 429 to client instead of crashing
+      if (err.status === 429 || /rate limit|quota|too many requests/i.test(String(err))) {
+        console.warn('Rate limit detected on single-text request, signaling to client');
+        return res.status(429).json({ error: 'Rate limit exceeded. Please retry in 1 minute.' });
+      }
+      throw err;
+    }
+
+    if (typeof translated === "string") {
+      translated = translated.trim();
+    } else {
+      translated = String(translated).trim();
+    }
+
+    console.log(`Translation successful: output length=${translated.length}`);
 
     let saved = null;
-
     if (save) {
-      const key = saveKey || generateKeyFromText(text);
-      saveToLocale(target, key, translated);
-      saved = { lang: target, key };
+      const key = generateKeyFromText(txt);
+      saveToLocale(targetLang, key, translated);
+      saved = { lang: targetLang, key };
+      console.log(`Saved to locale: ${targetLang}/${key}`);
     }
 
-    return res.json({
-      translated,
-      saved
-    });
-
+    return res.json({ translated, saved });
   } catch (err) {
     console.error("translate error:", err);
     return res.status(500).json({
       error: "translation failed",
-      details: err.message || err
+      details: err.message || String(err),
     });
   }
 });
 
-/** GET /api/locales/:lang */
 router.get("/locales/:lang", (req, res) => {
   try {
     const lang = req.params.lang;
@@ -77,10 +125,7 @@ router.get("/locales/:lang", (req, res) => {
     const json = JSON.parse(fs.readFileSync(file, "utf8"));
     res.json({ lang, keys: Object.keys(json), entries: json });
   } catch (err) {
-    res.status(500).json({
-      error: "failed to read locale",
-      details: err.message
-    });
+    res.status(500).json({ error: "failed to read locale", details: err.message });
   }
 });
 
@@ -90,21 +135,14 @@ router.delete("/locales/:lang/:key", (req, res) => {
     const { lang, key } = req.params;
     const file = ensureLocaleFile(lang);
     const json = JSON.parse(fs.readFileSync(file, "utf8"));
-
-    if (!json[key]) {
+    if (!Object.prototype.hasOwnProperty.call(json, key)) {
       return res.status(404).json({ error: "key not found" });
     }
-
     delete json[key];
     fs.writeFileSync(file, JSON.stringify(json, null, 2), "utf8");
-
     res.json({ ok: true });
-
   } catch (err) {
-    res.status(500).json({
-      error: "failed to delete key",
-      details: err.message
-    });
+    res.status(500).json({ error: "failed to delete key", details: err.message });
   }
 });
 
