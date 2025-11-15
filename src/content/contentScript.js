@@ -1,6 +1,3 @@
-// Content script for Travo extension
-// This runs on every webpage to handle translation
-
 const BACKEND_URL = "http://localhost:5000";
 
 // Get language from Chrome storage
@@ -70,12 +67,10 @@ async function sendToBackendArray(texts, targetLang) {
   }
 }
 
-// Replace page text with translation
-// Collect visible text nodes under root
+
 function getVisibleTextNodes(root = document.body) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
-      // Skip empty or whitespace-only nodes
       if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
       const parent = node.parentNode;
       if (!parent || parent.nodeType !== Node.ELEMENT_NODE) return NodeFilter.FILTER_REJECT;
@@ -86,7 +81,6 @@ function getVisibleTextNodes(root = document.body) {
       ]);
       if (excluded.has(tag)) return NodeFilter.FILTER_REJECT;
 
-      // Skip nodes that are hidden
       const style = window.getComputedStyle(parent);
       if (style && (style.visibility === 'hidden' || style.display === 'none' || parseFloat(style.opacity) === 0)) {
         return NodeFilter.FILTER_REJECT;
