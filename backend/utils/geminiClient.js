@@ -86,19 +86,112 @@
 // module.exports = { translateText };
 
 
+// require("dotenv").config();
+// const API_KEY = process.env.GEMINI_API_KEY;
+
+// if (!API_KEY) {
+//   console.warn("GEMINI_API_KEY missing.");
+// }
+
+// function wait(ms) {
+//   return new Promise((res) => setTimeout(res, ms));
+// }
+
+// async function translateText(text, targetLang) {
+//   const prompt = `Translate the following text into ${targetLang}. 
+// Return ONLY the translated text.
+
+// ${text}`;
+
+//   try {
+//     const { GoogleGenerativeAI } = require("@google/generative-ai");
+//     const client = new GoogleGenerativeAI(API_KEY);
+
+//     const model = client.getGenerativeModel({
+//       model: "gemini-2.0-flash",
+//     });
+
+//     const result = await model.generateContent(prompt);
+
+//     if (result && typeof result.response?.text === "function") {
+//       return await result.response.text();
+//     }
+
+//     throw new Error("Unexpected Gemini official-client response");
+//   } catch (err) {
+//     console.error("Gemini client error:", err);
+
+//     const fetch = require("node-fetch");
+//     const modelId = process.env.GEMINI_MODEL || "models/text-bison-001";
+
+//     const url = `https://generativelanguage.googleapis.com/v1beta2/${modelId}:generateText?key=${API_KEY}`;
+
+//     const body = {
+//       prompt: { text: prompt },
+//       temperature: 0.2,
+//       maxOutputTokens: 1024,
+//     };
+
+//     let attempts = 0;
+//     const maxAttempts = 2;
+
+//     while (attempts < maxAttempts) {
+//       attempts++;
+//       try {
+//         const r = await fetch(url, {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify(body),
+//         });
+
+//         const j = await r.json();
+
+//         if (j?.error?.code === 429 || r.status === 429) {
+//           if (attempts < maxAttempts) {
+//             await wait(1500);
+//             continue;
+//           }
+//           const e429 = new Error("Gemini quota exceeded");
+//           e429.status = 429;
+//           throw e429;
+//         }
+
+//         if (j?.candidates?.length) {
+//           return j.candidates[0].content.map((c) => c.text || "").join("");
+//         }
+
+//         throw new Error("Unexpected REST response: " + JSON.stringify(j));
+//       } catch (err2) {
+//         if (attempts < maxAttempts) {
+//           await wait(1500);
+//           continue;
+//         }
+//         err2.status = err2.status || 500;
+//         console.error("Gemini REST fallback final error:", err2);
+//         throw err2;
+//       }
+//     }
+//   }
+// }
+
+// module.exports = { translateText };
+
+
+
 require("dotenv").config();
 const API_KEY = process.env.GEMINI_API_KEY;
-
-if (!API_KEY) {
-  console.warn("GEMINI_API_KEY missing.");
-}
 
 function wait(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
 async function translateText(text, targetLang) {
-  const prompt = `Translate the following text into ${targetLang}. 
+  if (!API_KEY) {
+    console.warn("GEMINI_API_KEY missing : skipping Gemini");
+    return null;
+  }
+
+  const prompt = `Translate the following text into ${targetLang}.
 Return ONLY the translated text.
 
 ${text}`;
@@ -117,60 +210,10 @@ ${text}`;
       return await result.response.text();
     }
 
-    throw new Error("Unexpected Gemini official-client response");
+    return null;
   } catch (err) {
-    console.error("Gemini client error:", err);
-
-    const fetch = require("node-fetch");
-    const modelId = process.env.GEMINI_MODEL || "models/text-bison-001";
-
-    const url = `https://generativelanguage.googleapis.com/v1beta2/${modelId}:generateText?key=${API_KEY}`;
-
-    const body = {
-      prompt: { text: prompt },
-      temperature: 0.2,
-      maxOutputTokens: 1024,
-    };
-
-    let attempts = 0;
-    const maxAttempts = 2;
-
-    while (attempts < maxAttempts) {
-      attempts++;
-      try {
-        const r = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-
-        const j = await r.json();
-
-        if (j?.error?.code === 429 || r.status === 429) {
-          if (attempts < maxAttempts) {
-            await wait(1500);
-            continue;
-          }
-          const e429 = new Error("Gemini quota exceeded");
-          e429.status = 429;
-          throw e429;
-        }
-
-        if (j?.candidates?.length) {
-          return j.candidates[0].content.map((c) => c.text || "").join("");
-        }
-
-        throw new Error("Unexpected REST response: " + JSON.stringify(j));
-      } catch (err2) {
-        if (attempts < maxAttempts) {
-          await wait(1500);
-          continue;
-        }
-        err2.status = err2.status || 500;
-        console.error("Gemini REST fallback final error:", err2);
-        throw err2;
-      }
-    }
+    console.error("Gemini client failed:", err);
+    return null; // IMPORTANT → fallback to Lingo
   }
 }
 
